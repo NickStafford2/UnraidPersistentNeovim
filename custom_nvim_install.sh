@@ -1,74 +1,169 @@
 #!/bin/bash
-# Add a description of the app here. authored by Nicholas STafford. to be used with unraid. done on version unraid 7.1.4.
+# Persistent Neovim + LazyVim setup for Unraid 7.1.4
+# Authored by Nicholas Stafford
+
 set -e
 
-echo "=== Persistent Neovim Setup ==="
+###############################################################
+# Logging
+# All output (stdout + stderr) is saved to:
+#   /mnt/cache/nvim/logs/nvim_setup.log
+#
+# Logs persist across reboots and are appended on each run.
+###############################################################
+LOGFILE="/mnt/cache/nvim/logs/nvim_setup.log"
+mkdir -p /mnt/cache/nvim/logs
 
-# Persistent base directory
+exec > >(tee -a "$LOGFILE") 2>&1
+echo "--- Neovim Setup Run: $(date) ---"
+
+echo "=== Persistent Neovim Setup (Unraid 7.1.4) ==="
+
+###############################################################
+# Explanation: Why there are three AppImage paths
+#
+# 1. BOOT_APP  (USB flash drive)
+#    - Manually placed by you
+#    - Backup copy
+#    - FAT32 filesystem removes permissions
+#    - Not suitable for runtime use
+#
+# 2. CACHE_APP (SSD cache drive)
+#    - Persistent, safe storage
+#    - Fast read access
+#    - Holds the "installed" Neovim version
+#
+# 3. ROOT_APP  (/root in RAM)
+#    - Runtime copy restored on every boot
+#    - /usr/local/bin/nvim symlink points here
+#    - Required because Unraid wipes /root on reboot
+#
+# Flow:
+#   USB (backup) → CACHE (installed) → ROOT (runtime)
+###############################################################
+
 PERSIST="/mnt/cache/nvim"
 
-###############################################################
-# 0. AppImage locations
-###############################################################
-# This is where your Neovim AppImage lives on the USB flash drive.
 BOOT_APP="/boot/extra/nvim-linux-x86_64.appimage"
-
-# This is the version stored on the cache drive, which is actually persistent and much faster than USB.
 CACHE_APP="$PERSIST/bin/nvim.appimage"
-
-# This is where the script restores the appimage into RAM every boot.
 ROOT_APP="/root/nvim/nvim.appimage"
 
 ###############################################################
-# 1. Restore NVIM binary every boot
-# but lets change this
-# Make Nvim first so that if the script fails at some point, at least nvim is installed. the goal is to get some version of nvim working, then try to fix it if possible
-# If a copy of nvim exists in cache. lets load and use that first.
-# then, lets download the latest version of neovim. and use that.
-# wget https://github.com/neovim/neovim/releases/download/stable/nvim.appimage
-# if there is an easy way to test if it is working, do that. otherwise. use the newest version, and save the previous version as nvim-linux-x86_64.appimage.old (or something like that)
-# maybe we should use the usb one as backup? idk. give me options and I will decide what to do.
-###############################################################
-if [ -f "$CACHE_APP" ]; then
-	cp "$CACHE_APP" "$ROOT_APP"
-	chmod 755 "$ROOT_APP"
-	ln -sf "$ROOT_APP" /usr/local/bin/nvim
-else
-	echo "WARNING: No Neovim AppImage found in $CACHE_APP"
-fi
-###############################################################
-# 1. Ensure persistent directories exist
+# Ensure required directories exist
 ###############################################################
 mkdir -p $PERSIST/config
 mkdir -p $PERSIST/data
 mkdir -p $PERSIST/cache
 mkdir -p $PERSIST/bin
+
 mkdir -p /root/nvim
 mkdir -p /root/.config
 mkdir -p /root/.local/share
 mkdir -p /root/.cache
 
 ###############################################################
-# 2. my idea not sure
+# Neovim auto-update using GitHub API
 ###############################################################
-# here, lets look if the $PERSIST/config exists. if it does. use that neovim configuration. if not, download lazyvim from online and save it to that directory.
-###############################################################
-# 3. Move existing DATA (first-time-only)
-###############################################################
-ln -sf $PERSIST/data /root/.local/share/nvim
+echo "--- Checking for latest Neovim release ---"
+
+LATEST_URL=$(curl -sL https://api.github.com/repos/neovim/neovim/releases/latest |
+	grep browser_download_url |
+	grep appimage |
+	cut -d '"' -f 4)
+
+if [ -z "$LATEST_URL" ]; then
+	echo "Could not check GitHub for latest Neovim release."
+else
+	TMP_DL="/tmp/nvim-latest.appimage"
+	echo "Downloading latest Neovim..."
+	curl -L -o "$TMP_DL" "$LATEST_URL"
+	chmod 755 "$TMP_DL"
+
+	NEW_VER=$("$TMP_DL" --version | head -n 1 | awk '{print $2}')
+	OLD_VER="none"
+
+	if [ -f "$CACHE_APP" ]; then
+		OLD_VER=$("$CACHE_APP" --version | head -n 1 | awk '{print $2}')
+	fi
+
+	echo "Installed version: $OLD_VER"
+	echo "Available version: $NEW_VER"
+
+	if [ "$NEW_VER" != "$OLD_VER" ]; then
+		echo "Updating Neovim to $NEW_VER..."
+		mv "$CACHE_APP" "$CACHE_APP.old" 2>/dev/null || true
+		mv "$TMP_DL" "$CACHE_APP"
+		chmod 755 "$CACHE_APP"
+	else
+		echo "Already up to date."
+		rm -f "$TMP_DL"
+	fi
+fi
 
 ###############################################################
-# 4. Move existing CACHE (first-time-only)
+# Restore NVIM runtime binary every boot
 ###############################################################
-ln -sf $PERSIST/cache /root/.cache/nvim
+if [ -f "$CACHE_APP" ]; then
+	echo "Restoring Neovim runtime binary..."
+	cp "$CACHE_APP" "$ROOT_APP"
+	chmod 755 "$ROOT_APP"
+	ln -sf "$ROOT_APP" /usr/local/bin/nvim
+else
+	echo "WARNING: No persistent Neovim AppImage found at $CACHE_APP"
+	echo "         Place one manually at: $BOOT_APP"
+fi
 
 ###############################################################
-# 5. Persistent AppImage (first-time-only)
+# First-time setup — load USB version if persistent missing
 ###############################################################
-if [ -f "$BOOT_APP" ] && [ ! -f "$CACHE_APP" ]; then
-	echo "Copying AppImage to persistent storage..."
+if [ ! -f "$CACHE_APP" ] && [ -f "$BOOT_APP" ]; then
+	echo "Copying USB AppImage into persistent cache..."
 	cp "$BOOT_APP" "$CACHE_APP"
 	chmod 755 "$CACHE_APP"
 fi
 
-echo "=== Neovim persistence ready ==="
+###############################################################
+# LazyVim auto-install (only if config directory is empty)
+###############################################################
+if [ ! "$(ls -A $PERSIST/config)" ]; then
+	echo "LazyVim not found; installing starter configuration..."
+	git clone https://github.com/LazyVim/starter $PERSIST/config
+	rm -rf $PERSIST/config/.git
+else
+	echo "LazyVim configuration already exists."
+fi
+
+###############################################################
+# Symlinks for NVIM config/data/cache
+###############################################################
+ln -sf $PERSIST/config /root/.config/nvim
+ln -sf $PERSIST/data /root/.local/share/nvim
+ln -sf $PERSIST/cache /root/.cache/nvim
+
+###############################################################
+# Sync local config with GitHub repo (if internet available)
+#
+# This keeps your local /mnt/cache/nvim/config in sync with your
+# GitHub repo. Requires the repo to be public because Unraid has
+# only a minimal BusyBox git with limited features.
+###############################################################
+REPO_URL="https://github.com/NickStafford2/UnraidPersistentNeovim.git"
+LOCAL_REPO="$PERSIST/config"
+
+if ping -c 1 -W 1 github.com >/dev/null 2>&1; then
+	echo "--- Internet detected: syncing config from GitHub ---"
+
+	# If config folder does not exist, do a fresh clone
+	if [ ! -d "$LOCAL_REPO/.git" ]; then
+		echo "Config not a git repo — cloning fresh copy..."
+		rm -rf "$LOCAL_REPO"
+		git clone "$REPO_URL" "$LOCAL_REPO" || echo "Clone failed; using local copy."
+	else
+		echo "Updating existing config repo..."
+		git -C "$LOCAL_REPO" pull --rebase || echo "Pull failed; keeping local version."
+	fi
+else
+	echo "--- No internet; skipping GitHub sync ---"
+fi
+
+echo "=== Neovim persistence setup complete ==="
