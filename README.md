@@ -94,8 +94,23 @@ tail -f /mnt/cache/nvim/logs/nvim_setup.log
 
 ```
 
----
+## Git Limitations on Unraid
+
+Unraid ships with a **minimal BusyBox version of `git`**, not the full Git client found on normal Linux systems.
+Because of this:
+
+- Cloning GitHub repositories
+- Checking out branches
+- Updating submodules
+- Using HTTPS authentication
+- Using SSH keys for Git operations
+
+**does not work out of the box.**
+
+This means any plugin or script that tries to automatically download configuration files or GitHub repos (including some LazyVim bootstrappers) will fail unless you install a full Git package manually through a container or third-party addon.
+
+## For this reason, the Neovim setup script installs LazyVim **only once**, using the simplest possible `git clone` call, and does not rely on advanced Git features or GitHub integrations.
 
 ## License
 
-MIT License. Free to modify.
+MIT License. Free to modify. I accept pull requests.
