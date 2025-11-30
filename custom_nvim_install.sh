@@ -129,7 +129,7 @@ sync_lazyvim_usb_fallback() {
 ###############################################################
 download_latest_appimage() {
 	local tmpfile="$NVIM_BIN_DIR/nvim.appimage.new"
-	local url="https://github.com/neovim/neovim/releases/latest/download/nvim.appimage"
+	local url="https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.appimage"
 
 	log "--- Downloading latest Neovim AppImage ---"
 
@@ -289,6 +289,10 @@ main() {
 	check_root
 	ensure_dirs
 	ensure_nvim_appimage
+	if [ ! -f "$NVIM_APPIMAGE" ] || [ ! -s "$NVIM_APPIMAGE" ]; then
+		log "FATAL: Neovim AppImage missing at $NVIM_APPIMAGE"
+		exit 1
+	fi
 	install_nvim_wrapper
 	bootstrap_lazyvim
 	log "=== Neovim persistence setup complete ==="
