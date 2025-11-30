@@ -1,12 +1,11 @@
 #!/bin/bash
 #
 # install.sh – Installer for Unraid Persistent Neovim
+# Written By Nicholas Stafford.
 # Copies all required files into the correct Unraid locations,
 # configures /boot/config/go, and verifies environment compatibility.
 #
 # This script is BusyBox-friendly and safe to re-run (idempotent).
-# Written By Nicholas Stafford.
-#
 
 set -Eeuo pipefail
 
@@ -26,6 +25,7 @@ USER_SCRIPTS_DIR="/boot/config/plugins/user.scripts/scripts"
 AFTER_ARRAY_SCRIPT_NAME="Run-Nvim-Installer-After-Array"
 AFTER_ARRAY_SCRIPT="$USER_SCRIPTS_DIR/$AFTER_ARRAY_SCRIPT_NAME/script"
 AFTER_ARRAY_CRON="$USER_SCRIPTS_DIR/$AFTER_ARRAY_SCRIPT_NAME/cron"
+AFTER_ARRAY_SRC="$REPO_DIR/run_custom_nvim_after_array_start.sh"
 
 # ---------------------------------------------------------
 # Helper logging
@@ -104,33 +104,15 @@ fi
 # ---------------------------------------------------------
 log "Setting up User Scripts integration..."
 
-mkdir -p "$USER_SCRIPTS_DIR"
 mkdir -p "$(dirname "$AFTER_ARRAY_SCRIPT")"
 
-cat >"$AFTER_ARRAY_SCRIPT" <<'EOF'
-#!/bin/bash
-# Automatically run the persistent Neovim installer after array starts
-
-INSTALLER="/boot/config/custom_nvim_install.sh"
-
-# Ensure installer exists
-if [ ! -f "$INSTALLER" ]; then
-    echo "[nvim-after-array] ERROR: $INSTALLER not found."
-    exit 1
+if [ -f "$AFTER_ARRAY_SRC" ]; then
+	cp "$AFTER_ARRAY_SRC" "$AFTER_ARRAY_SCRIPT"
+	chmod 755 "$AFTER_ARRAY_SCRIPT"
+	log "User Script installed: $AFTER_ARRAY_SCRIPT"
+else
+	log "run_custom_nvim_after_array_start.sh not found in repo; skipping User Script install."
 fi
-
-# Ensure cache is actually mounted
-if ! grep -q " /mnt/cache " /proc/mounts 2>/dev/null ; then
-    echo "[nvim-after-array] Cache not mounted yet. Exiting."
-    exit 0
-fi
-
-echo "[nvim-after-array] Running custom Neovim installer on cache..."
-bash "$INSTALLER"
-echo "[nvim-after-array] Done."
-EOF
-
-chmod 755 "$AFTER_ARRAY_SCRIPT"
 
 # Create User Scripts scheduling file (At Array Start)
 cat >"$AFTER_ARRAY_CRON" <<'EOF'
@@ -138,7 +120,6 @@ custom
 At Startup of Array
 EOF
 
-log "User Script installed: $AFTER_ARRAY_SCRIPT"
 log "Schedule set to: At Array Start"
 
 # ---------------------------------------------------------
