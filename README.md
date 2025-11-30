@@ -1,35 +1,29 @@
 # Unraid Persistent Neovim
 
-A fully persistent, AppImage-based Neovim setup for Unraid.  
-Includes optional LazyVim support, sensible defaults, and a clean wrapper that stores all configuration on your cache drive instead of RAM.
+A fully persistent Neovim + LazyVim setup designed specifically for Unraid.  
+Provides fast LazyVim on cache, plus a USB-based fallback so `nvim` always works — even before the array is mounted.
 
-This project solves the core Unraid constraints:
-
-- Unraid runs from RAM → all config must be on /mnt/cache
-- AppImages work reliably → perfect for Neovim
-- BusyBox git cannot clone most GitHub repos → LazyVim must fall back gracefully
-
-This system boots Neovim **every time** with consistent configuration, treesitter-safe settings, and optional LazyVim plugin overrides.
+This system installs Neovim as an AppImage, maintains persistent configuration, and automatically switches between USB and cache depending on array state.
 
 ---
 
 ## Features
 
-- Fully persistent Neovim installation
-- AppImage stored on cache drive
-- Wrapper script exposes Neovim as `nvim`
-- Built-in fallback minimal config
-- LazyVim auto-bootstrap (if internet + git)
-- Custom plugin overrides for Unraid
-- Fully automated installation (via `install.sh`)
+- Persistent Neovim AppImage
+- USB fallback mode for early-boot or array-offline use
+- Cache-backed LazyVim when array is online
+- Automatic USB → cache migration at array start
+- Wrapper auto-selects correct runtime root
+- Optional Unraid-specific LazyVim plugin overrides
+- Minimal config fallback if git/internet unavailable
+- BusyBox-friendly, idempotent installer
+- One-command installation
 
 ---
 
-# Installation
+# Installation (One Command)
 
-### 1. Copy or clone the repo onto your Unraid system
-
-Option A — Clone repo (git should be installed)
+## Clone
 
 ```bash
 cd /boot/config
@@ -38,7 +32,7 @@ cd UnraidPersistentNeovim
 bash install.sh
 ```
 
-Option B — Download ZIP
+## Or download ZIP
 
 ```bash
 cd /boot/config
@@ -46,136 +40,61 @@ wget https://github.com/NickStafford2/UnraidPersistentNeovim/archive/refs/heads/
 unzip upnvim.zip
 cd UnraidPersistentNeovim-main
 bash install.sh
-
 ```
 
-### 2. Run install.sh
+### After install
 
-```
-bash install.sh
+The installer:
 
-```
+- Installs all files to `/boot/config/nvim`
+- Ensures Neovim runs at boot via `/boot/config/go`
+- Installs an Array Start hook via User Scripts
+- **Runs `custom_nvim_install.sh` immediately**
 
-This performs all of the following:
+Neovim is ready right away:
 
-- Creates `/boot/config/nvim/`
-- Copies:
-  - `custom_nvim_install.sh`
-  - `wrapper.sh`
-  - `minimal_init.lua`
-  - (optional) `unraid_config.lua`
-- Configures `/boot/config/go`
-- Sets correct permissions
-- Makes installation fully persistent
-- Adds a User Script that reruns custom_nvim_install.sh after the array starts to finish setup on /mnt/cache.
-
-### 3. Reboot (optional)
-
-After reboot, your Neovim will be available at:
-
-```
+```bash
 nvim
-
 ```
-
-You can also run without rebooting since the installer places the wrapper immediately.
-
----
-
-# File Layout (after installation)
-
-```
-/boot/config/custom_nvim_install.sh             # Main persistent Neovim manager
-/boot/config/nvim/
-minimal_init.lua                                # Fallback minimal config
-wrapper.sh                                      # Wrapper for AppImage + XDG paths
-unraid_config.lua                               # Optional LazyVim override config
-/mnt/cache/nvim/                                # AppImage + persistent XDG dirs
-/usr/local/bin/nvim → wrapper                   # Symlink installed by main script
-/boot/config/extra/nvim-linux-x86_64.appimage   # Optional offline fallback AppImage
-paths.env                                       # Shared path definitions used by all scripts
-
-```
-
----
-
-# How It Works
-
-### On boot
-
-`/boot/config/go` runs:
-
-```
-bash /boot/config/custom_nvim_install.sh
-
-```
-
-That script:
-
-1. Ensures `/mnt/cache/nvim` exists
-2. Downloads the newest Neovim AppImage (if internet is available)
-3. Creates persistent XDG directories
-4. Installs a wrapper at `/usr/local/bin/nvim`
-5. Attempts LazyVim bootstrap
-6. Falls back to `minimal_init.lua` if GitHub clone fails
-
-This makes the system both **smart when online** and **stable when offline**.
-A User Script runs the installer again at Array Start to migrate Neovim from USB → /mnt/cache.
-
----
-
-# LazyVim on Unraid
-
-Because Unraid uses BusyBox git, HTTPS cloning often fails.
-
-This repo includes:
-
-```
-unraid_config.lua
-
-```
-
-Which:
-
-- Disables Tree-sitter
-- Disables Mason
-- Disables DAP
-- Removes formatter by filetype errors
-
-LazyVim becomes lightweight and fully compatible with Unraid.
 
 ---
 
 # Updating
 
-Just re-run:
-
-```
+```bash
 cd /boot/config/UnraidPersistentNeovim
 bash install.sh
-
 ```
 
-Updates:
+This updates:
 
 - wrapper
+- install scripts
 - minimal config
-- fallback configs
-- installation script
-- go file entry (idempotent)
+- Unraid LazyVim overrides
+- boot hooks
 
 ---
 
 # Uninstallation
 
-```
+```bash
 bash uninstall.sh
-
 ```
+
+Removes:
+
+- `/boot/config/nvim`
+- `/boot/config/custom_nvim_install.sh`
+- `/usr/local/bin/nvim`
+- `/mnt/cache/nvim`
+- User Script + go-file entry
+
+---
 
 ### Terminal Color Note (Optional)
 
-If vi does not look/work properly, or if Neovim looks monochrome or your SSH session shows limited colors, your terminal may not advertise 256-color support.
+If vi or Neovim does not look/work properly, or if Neovim looks monochrome or your SSH session shows limited colors, your terminal may not advertise 256-color support.
 You can fix this by adding the following line to your shell profile:
 
 ```bash
