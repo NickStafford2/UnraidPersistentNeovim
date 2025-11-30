@@ -53,8 +53,8 @@ export XDG_STATE_HOME="$ROOT/state"
 export XDG_CACHE_HOME="$ROOT/cache"
 
 # --- Debug output based on verbosity ---
-log 1 "Source: $SOURCE"
-log 2 "Using ROOT: $ROOT"
-log 3 "AppImage: $APP"
+log 1 "  Source: $SOURCE"
+log 2 "  Using ROOT: $ROOT"
+log 3 "  AppImage: $APP"
 
 exec "$APP" "$@"
