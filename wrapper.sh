@@ -12,7 +12,16 @@ fi
 
 # --- Verbosity system (future-proof) ---
 # 0 = silent, 1 = basic, 2 = more, 3 = full debug
-VERBOSE_LEVEL=3 # <-- always max verbosity for now
+VERBOSE_LEVEL=0
+
+# Parse -v / -vv / -vvv
+for arg in "$@"; do
+	case "$arg" in
+	-v) VERBOSE_LEVEL=1 ;;
+	-vv) VERBOSE_LEVEL=2 ;;
+	-vvv) VERBOSE_LEVEL=3 ;;
+	esac
+done
 
 log() {
 	if [ "$VERBOSE_LEVEL" -ge "$1" ] && [ -t 1 ]; then
