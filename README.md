@@ -19,8 +19,7 @@ This system boots Neovim **every time** with consistent configuration, treesitte
 - AppImage stored on cache drive
 - Wrapper script exposes Neovim as `nvim`
 - Built-in fallback minimal config
-- LazyVim auto-bootstrap (if internet + non-BusyBox git)
-- Safe fallback for BusyBox git environments
+- LazyVim auto-bootstrap (if internet + git)
 - Custom plugin overrides for Unraid
 - Fully automated installation (via `install.sh`)
 
