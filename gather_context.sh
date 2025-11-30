@@ -11,7 +11,7 @@ FILES=(
 	"README.md"
 	"install.sh"
 	"custom_nvim_install.sh"
-	"nvim-wrapper.sh"
+	"wrapper.sh"
 	# "minimal_init.lua"
 	# "unraid_config.lua"
 	"run_custom_nvim_after_array_start.sh"

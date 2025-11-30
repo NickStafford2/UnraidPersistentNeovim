@@ -61,7 +61,7 @@ This performs all of the following:
 - Creates `/boot/config/nvim/`
 - Copies:
   - `custom_nvim_install.sh`
-  - `nvim-wrapper.sh`
+  - `wrapper.sh`
   - `minimal_init.lua`
   - (optional) `unraid_config.lua`
 - Configures `/boot/config/go`
@@ -88,7 +88,7 @@ You can also run without rebooting since the installer places the wrapper immedi
 /boot/config/custom_nvim_install.sh             # Main persistent Neovim manager
 /boot/config/nvim/
 minimal_init.lua                                # Fallback minimal config
-nvim-wrapper.sh                                 # Wrapper for AppImage + XDG paths
+wrapper.sh                                      # Wrapper for AppImage + XDG paths
 unraid_config.lua                               # Optional LazyVim override config
 /mnt/cache/nvim/                                # AppImage + persistent XDG dirs
 /usr/local/bin/nvim → wrapper                   # Symlink installed by main script
