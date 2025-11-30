@@ -137,8 +137,10 @@ log "Schedule set to: At Array Start"
 # ---------------------------------------------------------
 # Final confirmation
 # ---------------------------------------------------------
+log "Running initial Neovim setup..."
+bash "$INSTALL_SCRIPT_DEST"
+
 log "Installation complete!"
-log "On next boot, Neovim will persist and auto-configure."
-log "You can run it now via: nvim"
+log "Neovim is ready. You can run it via: nvim"
 
 exit 0
