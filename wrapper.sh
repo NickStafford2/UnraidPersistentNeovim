@@ -1,6 +1,12 @@
 #!/bin/bash
 # Smart wrapper: prefer cache, fall back to USB
 
+# Ensure paths.env exists (BusyBox-safe guard)
+if [ ! -r /boot/config/nvim/paths.env ]; then
+	echo "[nvim-wrapper] ERROR: /boot/config/nvim/paths.env missing or unreadable."
+	exit 1
+fi
+
 # shellcheck disable=SC1091
 . /boot/config/nvim/paths.env
 
