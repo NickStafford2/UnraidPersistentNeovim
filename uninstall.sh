@@ -12,6 +12,9 @@ INSTALL_SCRIPT="$BOOTCFG/custom_nvim_install.sh"
 GO_FILE="$BOOTCFG/go"
 NVIM_CACHE="/mnt/cache/nvim"
 WRAPPER_SYMLINK="/usr/local/bin/nvim"
+USER_SCRIPTS_DIR="/boot/config/plugins/user.scripts/scripts"
+AFTER_ARRAY_SCRIPT_NAME="Run-Nvim-Installer-After-Array"
+AFTER_ARRAY_SCRIPT_PATH="$USER_SCRIPTS_DIR/$AFTER_ARRAY_SCRIPT_NAME"
 
 log() {
 	printf "[uninstall] %s\n" "$*"
@@ -85,6 +88,16 @@ if [ -L "$WRAPPER_SYMLINK" ]; then
 	rm -f "$WRAPPER_SYMLINK"
 else
 	log "No nvim symlink found in /usr/local/bin — skipping."
+fi
+
+# ---------------------------------------------------------
+# Remove User Scripts entry (Array Start script)
+# ---------------------------------------------------------
+if [ -d "$AFTER_ARRAY_SCRIPT_PATH" ]; then
+	log "Removing User Script: $AFTER_ARRAY_SCRIPT_PATH..."
+	rm -rf "$AFTER_ARRAY_SCRIPT_PATH"
+else
+	log "No User Script for Neovim found — skipping."
 fi
 
 # ---------------------------------------------------------

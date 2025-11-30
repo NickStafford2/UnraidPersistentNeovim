@@ -69,6 +69,7 @@ This performs all of the following:
 - Configures `/boot/config/go`
 - Sets correct permissions
 - Makes installation fully persistent
+- Adds a User Script that reruns custom_nvim_install.sh after the array starts to finish setup on /mnt/cache.
 
 ### 3. Reboot (optional)
 
@@ -122,6 +123,7 @@ That script:
 6. Falls back to `minimal_init.lua` if GitHub clone fails
 
 This makes the system both **smart when online** and **stable when offline**.
+A User Script runs the installer again at Array Start to migrate Neovim from USB → /mnt/cache.
 
 ---
 

@@ -1,9 +1,18 @@
 #!/bin/bash
-# Wrapper so Neovim uses persistent XDG paths on Unraid.
+# Smart wrapper: prefer cache, fall back to USB
 
-export XDG_CONFIG_HOME="/mnt/cache/nvim/config"
-export XDG_DATA_HOME="/mnt/cache/nvim/data"
-export XDG_STATE_HOME="/mnt/cache/nvim/state"
-export XDG_CACHE_HOME="/mnt/cache/nvim/cache"
+USB_ROOT="/boot/config/nvim"
+CACHE_ROOT="/mnt/cache/nvim"
 
-exec /mnt/cache/nvim/bin/nvim.appimage "$@"
+if [ -d "$CACHE_ROOT" ]; then
+	ROOT="$CACHE_ROOT"
+else
+	ROOT="$USB_ROOT"
+fi
+
+export XDG_CONFIG_HOME="$ROOT/config"
+export XDG_DATA_HOME="$ROOT/data"
+export XDG_STATE_HOME="$ROOT/state"
+export XDG_CACHE_HOME="$ROOT/cache"
+
+exec "$ROOT/bin/nvim.appimage" "$@"

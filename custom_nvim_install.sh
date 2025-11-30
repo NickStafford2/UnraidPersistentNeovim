@@ -1,15 +1,43 @@
 #!/bin/bash
-# Persistent Neovim + LazyVim setup for Unraid 7.x
-# Installs a persistent Neovim AppImage and points all config/data
-# to /mnt/cache/nvim so it survives reboots.
+###############################################################
+# custom_nvim_install.sh
 # Authored by Nicholas Stafford
+# Persistent Neovim + LazyVim setup for Unraid 7.x
+#
+# One script handles:
+#   - Early boot (USB only)
+#   - Normal runtime (prefers cache)
+#   - Array start migration (USB → cache)
+#
+# Key guarantees:
+#   - Wrapper script always works (dynamic USB/cache root)
+#   - Config paths always correct
+#   - LazyVim bootstrap works when possible; minimal config otherwise
+#   - BusyBox-safe
+#
+###############################################################
 
 set -Eeuo pipefail
 
 ###############################################################
-# Paths
+# Initial default paths (USB-first)
 ###############################################################
-NVIM_ROOT="/mnt/cache/nvim"
+
+cache_is_mounted() {
+	grep -q " /mnt/cache " /proc/mounts 2>/dev/null
+}
+
+USB_ROOT="/boot/config/nvim"
+CACHE_ROOT="/mnt/cache/nvim"
+
+# Default NVIM_ROOT → USB
+NVIM_ROOT="$USB_ROOT"
+
+if cache_is_mounted; then
+	NVIM_ROOT="$CACHE_ROOT"
+fi
+
+# Paths bound to NVIM_ROOT
 NVIM_BIN_DIR="$NVIM_ROOT/bin"
 NVIM_CONFIG_DIR="$NVIM_ROOT/config"
 NVIM_DATA_DIR="$NVIM_ROOT/data"
@@ -21,8 +49,8 @@ NVIM_APPIMAGE="$NVIM_BIN_DIR/nvim.appimage"
 NVIM_OLD_APPIMAGE="$NVIM_BIN_DIR/nvim.appimage.old"
 NVIM_WRAPPER="/usr/local/bin/nvim"
 
-# Optional offline fallback AppImage path (copied manually by user)
-FALLBACK_APPIMAGE="/boot/extra/nvim-linux-x86_64.appimage"
+# Optional offline fallback AppImage path
+FALLBACK_APPIMAGE="/boot/config/extra/nvim-linux-x86_64.appimage"
 
 LOGFILE="$NVIM_LOG_DIR/nvim_setup.log"
 
@@ -45,6 +73,17 @@ log() {
 }
 
 log "=== Unraid Neovim persistence setup starting ==="
+log "Using NVIM_ROOT: $NVIM_ROOT"
+
+###############################################################
+# Optional one-time migration USB → cache
+###############################################################
+if cache_is_mounted && [ -d "$USB_ROOT" ] && [ ! -d "$CACHE_ROOT" ]; then
+	log "Cache mounted and no cache nvim folder — migrating USB → cache..."
+	mkdir -p "$CACHE_ROOT"
+	cp -a "$USB_ROOT/"* "$CACHE_ROOT/" 2>/dev/null || true
+	log "Migration complete."
+fi
 
 ###############################################################
 # Helpers
@@ -53,14 +92,6 @@ check_root() {
 	if [ "$(id -u)" -ne 0 ]; then
 		log "ERROR: This script must be run as root."
 		exit 1
-	fi
-}
-
-check_cache_drive() {
-	if [ ! -d "/mnt/cache" ]; then
-		log "ERROR: /mnt/cache does not exist. Is the array started?"
-		log "Aborting Neovim setup to avoid writing to RAM filesystem."
-		exit 0
 	fi
 }
 
@@ -153,21 +184,20 @@ ensure_nvim_appimage() {
 # Wrapper script in /usr/local/bin
 ###############################################################
 install_nvim_wrapper() {
-	if [ ! -f "$NVIM_APPIMAGE" ]; then
-		log "WARNING: Neovim AppImage not found; wrapper will be created but running it will fail."
+	if [ ! -f "/boot/config/nvim/nvim-wrapper.sh" ]; then
+		log "ERROR: Wrapper script missing at /boot/config/nvim/nvim-wrapper.sh"
+	else
+		cp /boot/config/nvim/nvim-wrapper.sh "$NVIM_WRAPPER"
+		chmod 755 "$NVIM_WRAPPER"
+		log "Installed wrapper script to $NVIM_WRAPPER"
 	fi
-
-	mkdir -p "$(dirname "$NVIM_WRAPPER")"
-	cp /boot/config/nvim-wrapper.sh "$NVIM_WRAPPER"
-	chmod 755 "$NVIM_WRAPPER"
-	log "Installed wrapper script to $NVIM_WRAPPER"
 }
 
 ###############################################################
 # LazyVim / config bootstrap
 ###############################################################
 write_minimal_init() {
-	local src="/boot/config/minimal_init.lua"
+	local src="/boot/config/nvim/minimal_init.lua"
 
 	if [ ! -f "$src" ]; then
 		log "ERROR: $src not found."
@@ -181,14 +211,14 @@ write_minimal_init() {
 }
 
 install_unraid_plugin_config() {
-	local src="/boot/config/unraid_config.lua"
+	local src="/boot/config/nvim/unraid_config.lua"
 	local dest_dir="$NVIM_CONFIG_DIR/lua/plugins"
 	if [ -f "$src" ]; then
 		mkdir -p "$dest_dir"
 		cp "$src" "$dest_dir/unraid_config.lua"
 		log "Installed Unraid-specific plugin overrides to $dest_dir/unraid_config.lua"
 	else
-		log "unraid_config.lua not found at /boot/config; skipping Unraid plugin overrides."
+		log "unraid_config.lua not found at /boot/config/nvim; skipping Unraid plugin overrides."
 	fi
 }
 
@@ -234,7 +264,6 @@ bootstrap_lazyvim() {
 ###############################################################
 main() {
 	check_root
-	check_cache_drive
 	ensure_dirs
 	ensure_nvim_appimage
 	install_nvim_wrapper
