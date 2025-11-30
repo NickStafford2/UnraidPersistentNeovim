@@ -221,14 +221,14 @@ write_minimal_init() {
 		exit 1
 	fi
 
-	mkdir -p "$NVIM_CONFIG_DIR/lua/plugins"
-	cp "$src" "$NVIM_CONFIG_DIR/init.lua"
+	mkdir -p "$NVIM_CONFIG_DIR/nvim/lua/plugins"
+	cp "$src" "$NVIM_CONFIG_DIR/nvim/init.lua"
 	log "Installed minimal init.lua and created /lua/plugins directory."
 }
 
 install_unraid_plugin_config() {
 	local src="/boot/config/nvim/unraid_config.lua"
-	local dest_dir="$NVIM_CONFIG_DIR/lua/plugins"
+	local dest_dir="$NVIM_CONFIG_DIR/nvim/lua/plugins"
 	if [ -f "$src" ]; then
 		mkdir -p "$dest_dir"
 		cp "$src" "$dest_dir/unraid_config.lua"
@@ -239,9 +239,11 @@ install_unraid_plugin_config() {
 }
 
 bootstrap_lazyvim() {
+	# Ensure nvim/ exists before checking for init.lua
+	mkdir -p "$NVIM_CONFIG_DIR/nvim"
 
 	# If user already has a config (USB or CACHE depending on NVIM_ROOT), leave it alone
-	if [ -f "$NVIM_CONFIG_DIR/init.lua" ]; then
+	if [ -f "$NVIM_CONFIG_DIR/nvim/init.lua" ]; then
 		log "Existing Neovim config detected; skipping LazyVim bootstrap."
 		install_unraid_plugin_config
 
@@ -259,11 +261,11 @@ bootstrap_lazyvim() {
 
 		if git clone --depth 1 https://github.com/LazyVim/starter "$tmp_dir"; then
 			shopt -s dotglob
-			mkdir -p "$NVIM_CONFIG_DIR"
-			mv "$tmp_dir"/* "$NVIM_CONFIG_DIR"/
+			mkdir -p "$NVIM_CONFIG_DIR/nvim"
+			mv "$tmp_dir"/* "$NVIM_CONFIG_DIR/nvim"/
 			shopt -u dotglob
 			rm -rf "$tmp_dir"
-			log "LazyVim starter installed into $NVIM_CONFIG_DIR"
+			log "LazyVim starter installed into $NVIM_CONFIG_DIR/nvim"
 
 			# After successfully installing to cache, sync to USB
 			sync_lazyvim_usb_fallback
