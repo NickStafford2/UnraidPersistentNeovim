@@ -41,10 +41,9 @@ log "Starting Unraid Persistent Neovim removal..."
 # ---------------------------------------------------------
 # Remove startup hook from /boot/config/go
 # ---------------------------------------------------------
-if grep -q "custom_nvim_install.sh" "$GO_FILE"; then
+if [ -f "$GO_FILE" ] && grep -q "custom_nvim_install.sh" "$GO_FILE"; then
 	log "Removing startup hook from $GO_FILE..."
 
-	# Keep everything except the lines between the Start/End markers
 	sed -i '/# Start Unraid Persistent Neovim/,/# End Unraid Persistent Neovim/d' "$GO_FILE"
 
 	log "Startup hook removed."
@@ -62,7 +61,6 @@ else
 	log "custom_nvim_install.sh not found — skipping."
 fi
 
-# Remove entire /boot/config/nvim directory (safe—only your files live there)
 if [ -d "$TARGET_DIR" ]; then
 	log "Removing $TARGET_DIR..."
 	rm -rf "$TARGET_DIR"
@@ -83,8 +81,8 @@ fi
 # ---------------------------------------------------------
 # Remove wrapper symlink
 # ---------------------------------------------------------
-if [ -L "$WRAPPER_SYMLINK" ]; then
-	log "Removing nvim symlink at $WRAPPER_SYMLINK..."
+if [ -e "$WRAPPER_SYMLINK" ]; then
+	log "Removing nvim symlink or file at $WRAPPER_SYMLINK..."
 	rm -f "$WRAPPER_SYMLINK"
 else
 	log "No nvim symlink found in /usr/local/bin — skipping."
@@ -94,11 +92,8 @@ fi
 # Remove User Scripts entry (Array Start script)
 # ---------------------------------------------------------
 if [ -d "$AFTER_ARRAY_SCRIPT_PATH" ]; then
-	log "Removing User Script: $AFTER_ARRAY_SCRIPT_PATH..."
+	log "Removing User Script directory: $AFTER_ARRAY_SCRIPT_PATH..."
 	rm -rf "$AFTER_ARRAY_SCRIPT_PATH"
-	if [ -f "$AFTER_ARRAY_CRON" ]; then
-		rm -f "$AFTER_ARRAY_CRON"
-	fi
 else
 	log "No User Script for Neovim found — skipping."
 fi
