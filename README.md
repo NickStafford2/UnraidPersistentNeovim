@@ -93,6 +93,7 @@ unraid_config.lua                               # Optional LazyVim override conf
 /mnt/cache/nvim/                                # AppImage + persistent XDG dirs
 /usr/local/bin/nvim → wrapper                   # Symlink installed by main script
 /boot/config/extra/nvim-linux-x86_64.appimage   # Optional offline fallback AppImage
+paths.env                                       # Shared path definitions used by all scripts
 
 ```
 

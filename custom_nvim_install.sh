@@ -27,8 +27,13 @@ cache_is_mounted() {
 	grep -q " /mnt/cache " /proc/mounts 2>/dev/null
 }
 
-USB_ROOT="/boot/config/nvim"
-CACHE_ROOT="/mnt/cache/nvim"
+if [ -f "/boot/config/nvim/paths.env" ]; then
+	# shellcheck disable=SC1091
+	. /boot/config/nvim/paths.env
+else
+	echo "ERROR: paths.env missing."
+	exit 1
+fi
 
 # Default NVIM_ROOT → USB
 NVIM_ROOT="$USB_ROOT"

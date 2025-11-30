@@ -78,6 +78,13 @@ copy_file "$INSTALL_SCRIPT_SRC" "$INSTALL_SCRIPT_DEST"
 copy_file "$WRAPPER_SRC" "$TARGET_DIR/nvim-wrapper.sh"
 copy_file "$MINIMAL_INIT_SRC" "$TARGET_DIR/minimal_init.lua"
 
+# Install paths.env
+echo 'USB_ROOT="/boot/config/nvim"' >"$TARGET_DIR/paths.env"
+echo 'CACHE_ROOT="/mnt/cache/nvim"' >>"$TARGET_DIR/paths.env"
+echo 'NVIM_WRAPPER="/usr/local/bin/nvim"' >>"$TARGET_DIR/paths.env"
+chmod 644 "$TARGET_DIR/paths.env"
+log "Installed paths.env"
+
 # unraid_config.lua is optional but recommended
 if [ -f "$UNRAID_CONFIG_SRC" ]; then
 	cp "$UNRAID_CONFIG_SRC" "$TARGET_DIR/unraid_config.lua"
