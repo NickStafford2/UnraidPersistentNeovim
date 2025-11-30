@@ -89,13 +89,14 @@ You can also run without rebooting since the installer places the wrapper immedi
 
 ```
 
-/boot/config/custom_nvim_install.sh     # Main persistent Neovim manager
+/boot/config/custom_nvim_install.sh             # Main persistent Neovim manager
 /boot/config/nvim/
-minimal_init.lua                        # Fallback minimal config
-nvim-wrapper.sh                         # Wrapper for AppImage + XDG paths
-unraid_config.lua                       # Optional LazyVim override config
-/mnt/cache/nvim/                        # AppImage + persistent XDG dirs
-/usr/local/bin/nvim → wrapper           # Symlink installed by main script
+minimal_init.lua                                # Fallback minimal config
+nvim-wrapper.sh                                 # Wrapper for AppImage + XDG paths
+unraid_config.lua                               # Optional LazyVim override config
+/mnt/cache/nvim/                                # AppImage + persistent XDG dirs
+/usr/local/bin/nvim → wrapper                   # Symlink installed by main script
+/boot/config/extra/nvim-linux-x86_64.appimage   # Optional offline fallback AppImage
 
 ```
 
