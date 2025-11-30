@@ -107,7 +107,7 @@ have_cmd() {
 
 ensure_dirs() {
 	mkdir -p "$NVIM_BIN_DIR" "$NVIM_CONFIG_DIR" "$NVIM_DATA_DIR" \
-		"$NVIM_CACHE_DIR" "$NVIM_STATE_DIR"
+		"$NVIM_CACHE_DIR" "$NVIM_STATE_DIR" "$NVIM_LOG_DIR"
 }
 
 ###############################################################
