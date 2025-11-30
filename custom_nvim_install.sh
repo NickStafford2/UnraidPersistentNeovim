@@ -81,7 +81,7 @@ log "Using NVIM_ROOT: $NVIM_ROOT"
 if cache_is_mounted && [ -d "$USB_ROOT" ] && [ ! -d "$CACHE_ROOT" ]; then
 	log "Cache mounted and no cache nvim folder — migrating USB → cache..."
 	mkdir -p "$CACHE_ROOT"
-	cp -a "$USB_ROOT/"* "$CACHE_ROOT/" 2>/dev/null || true
+	cp -a "$USB_ROOT"/. "$CACHE_ROOT/" 2>/dev/null || true
 	log "Migration complete."
 fi
 
