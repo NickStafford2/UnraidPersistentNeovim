@@ -88,13 +88,13 @@ You can also run without rebooting since the installer places the wrapper immedi
 
 ```
 
-/boot/config/custom_nvim_install.sh         # Main persistent Neovim manager
+/boot/config/custom_nvim_install.sh     # Main persistent Neovim manager
 /boot/config/nvim/
 minimal_init.lua                        # Fallback minimal config
 nvim-wrapper.sh                         # Wrapper for AppImage + XDG paths
 unraid_config.lua                       # Optional LazyVim override config
-/mnt/cache/nvim/                             # AppImage + persistent XDG dirs
-/usr/local/bin/nvim → wrapper                # Symlink installed by main script
+/mnt/cache/nvim/                        # AppImage + persistent XDG dirs
+/usr/local/bin/nvim → wrapper           # Symlink installed by main script
 
 ```
 
@@ -190,29 +190,4 @@ bash /boot/config/custom_nvim_install.sh
 /mnt/cache/nvim/
 /usr/local/bin/nvim
 
-```
-
----
-
-# License
-
-Included separately in LICENSE file.
-
----
-
-Enjoy a fully persistent, fully functional Neovim on Unraid!
-
-```
-
-============================================================
-If you'd like, I can also:
-
-* Rewrite custom_nvim_install.sh to perfectly integrate with this installer
-* Create a .zip release structure
-* Add an uninstall.sh
-* Add checksums or versioning
-* Add colorized output for installer
-* Add GitHub Actions automation for packaging
-
-Just tell me!
 ```
