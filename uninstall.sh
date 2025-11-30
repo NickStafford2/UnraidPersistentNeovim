@@ -96,6 +96,9 @@ fi
 if [ -d "$AFTER_ARRAY_SCRIPT_PATH" ]; then
 	log "Removing User Script: $AFTER_ARRAY_SCRIPT_PATH..."
 	rm -rf "$AFTER_ARRAY_SCRIPT_PATH"
+	if [ -f "$AFTER_ARRAY_CRON" ]; then
+		rm -f "$AFTER_ARRAY_CRON"
+	fi
 else
 	log "No User Script for Neovim found — skipping."
 fi
