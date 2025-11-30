@@ -89,7 +89,6 @@ if [ -f "$PATHS_SRC" ]; then
 else
 	fail "paths.env missing in repo."
 fi
-log "Installed paths.env"
 
 # unraid_config.lua is optional but recommended
 if [ -f "$UNRAID_CONFIG_SRC" ]; then
