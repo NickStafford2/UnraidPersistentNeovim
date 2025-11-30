@@ -4,7 +4,7 @@
 USB_ROOT="/boot/config/nvim"
 CACHE_ROOT="/mnt/cache/nvim"
 
-if [ -d "$CACHE_ROOT" ]; then
+if grep -q " /mnt/cache " /proc/mounts 2>/dev/null; then
 	ROOT="$CACHE_ROOT"
 else
 	ROOT="$USB_ROOT"
