@@ -53,7 +53,6 @@ bash install.sh
 ### 2. Run install.sh
 
 ```
-
 bash install.sh
 
 ```
@@ -76,7 +75,6 @@ This performs all of the following:
 After reboot, your Neovim will be available at:
 
 ```
-
 nvim
 
 ```
@@ -88,7 +86,6 @@ You can also run without rebooting since the installer places the wrapper immedi
 # File Layout (after installation)
 
 ```
-
 /boot/config/custom_nvim_install.sh             # Main persistent Neovim manager
 /boot/config/nvim/
 minimal_init.lua                                # Fallback minimal config
@@ -109,7 +106,6 @@ unraid_config.lua                               # Optional LazyVim override conf
 `/boot/config/go` runs:
 
 ```
-
 bash /boot/config/custom_nvim_install.sh
 
 ```
@@ -135,7 +131,6 @@ Because Unraid uses BusyBox git, HTTPS cloning often fails.
 This repo includes:
 
 ```
-
 unraid_config.lua
 
 ```
@@ -156,7 +151,6 @@ LazyVim becomes lightweight and fully compatible with Unraid.
 Just re-run:
 
 ```
-
 cd /boot/config/UnraidPersistentNeovim
 bash install.sh
 
