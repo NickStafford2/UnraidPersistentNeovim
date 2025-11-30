@@ -79,10 +79,16 @@ copy_file "$WRAPPER_SRC" "$TARGET_DIR/wrapper.sh"
 copy_file "$MINIMAL_INIT_SRC" "$TARGET_DIR/minimal_init.lua"
 
 # Install paths.env
-echo 'USB_ROOT="/boot/config/nvim"' >"$TARGET_DIR/paths.env"
-echo 'CACHE_ROOT="/mnt/cache/nvim"' >>"$TARGET_DIR/paths.env"
-echo 'NVIM_WRAPPER="/usr/local/bin/nvim"' >>"$TARGET_DIR/paths.env"
-chmod 644 "$TARGET_DIR/paths.env"
+PATHS_SRC="$REPO_DIR/paths.env"
+PATHS_DEST="$TARGET_DIR/paths.env"
+
+if [ -f "$PATHS_SRC" ]; then
+	cp "$PATHS_SRC" "$PATHS_DEST"
+	chmod 644 "$PATHS_DEST"
+	log "Installed paths.env"
+else
+	fail "paths.env missing in repo."
+fi
 log "Installed paths.env"
 
 # unraid_config.lua is optional but recommended
