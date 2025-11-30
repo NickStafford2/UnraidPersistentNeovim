@@ -16,7 +16,7 @@ if [ ! -f "$INSTALLER" ]; then
 fi
 
 # Ensure cache is actually mounted (not just a directory)
-# Optional: wait up to 20 seconds for cache mount
+# Wait a short while for cache mount
 for _ in {1..60}; do
 	if grep -q " /mnt/cache " /proc/mounts; then
 		break
