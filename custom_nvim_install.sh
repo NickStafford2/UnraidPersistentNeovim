@@ -114,6 +114,16 @@ ensure_dirs() {
 		"$NVIM_CACHE_DIR" "$NVIM_STATE_DIR" "$NVIM_LOG_DIR"
 }
 
+sync_lazyvim_usb_fallback() {
+	# Only sync if LazyVim exists on CACHE and cache is active
+	if cache_is_mounted && [ -d "$CACHE_ROOT/config" ]; then
+		log "Syncing LazyVim from cache → USB fallback..."
+		mkdir -p "$USB_ROOT/config"
+		cp -a "$CACHE_ROOT/config/." "$USB_ROOT/config/" 2>/dev/null || true
+		log "USB LazyVim fallback updated."
+	fi
+}
+
 ###############################################################
 # Neovim AppImage install/update
 ###############################################################
@@ -229,39 +239,46 @@ install_unraid_plugin_config() {
 }
 
 bootstrap_lazyvim() {
-	# If user already has a config, do not touch it.
+
+	# If user already has a config (USB or CACHE depending on NVIM_ROOT), leave it alone
 	if [ -f "$NVIM_CONFIG_DIR/init.lua" ]; then
 		log "Existing Neovim config detected; skipping LazyVim bootstrap."
 		install_unraid_plugin_config
+
+		# Ensure USB fallback stays in sync
+		sync_lazyvim_usb_fallback
 		return
 	fi
 
-	# Try to bootstrap LazyVim starter if git + internet are available.
-	if have_cmd git && have_internet; then
-		log "--- Bootstrapping LazyVim starter config ---"
-		local tmp_dir="$NVIM_ROOT/tmp_lazyvim"
+	# Attempt LazyVim bootstrap only when git + internet + cache
+	if cache_is_mounted && have_cmd git && have_internet; then
+		log "--- Bootstrapping LazyVim starter on CACHE ---"
+		local tmp_dir="$CACHE_ROOT/tmp_lazyvim"
 		rm -rf "$tmp_dir"
 		mkdir -p "$tmp_dir"
 
 		if git clone --depth 1 https://github.com/LazyVim/starter "$tmp_dir"; then
-			# Move all files (including dotfiles) into the config directory.
 			shopt -s dotglob
 			mkdir -p "$NVIM_CONFIG_DIR"
 			mv "$tmp_dir"/* "$NVIM_CONFIG_DIR"/
 			shopt -u dotglob
 			rm -rf "$tmp_dir"
 			log "LazyVim starter installed into $NVIM_CONFIG_DIR"
+
+			# After successfully installing to cache, sync to USB
+			sync_lazyvim_usb_fallback
 		else
-			log "git clone of LazyVim starter failed; falling back to minimal init.lua."
+			log "git clone failed; falling back to minimal init.lua"
 			rm -rf "$tmp_dir"
 			write_minimal_init
 		fi
+
 	else
-		log "git not available or no internet; creating minimal init.lua instead of LazyVim."
+		# Either USB boot or no internet/git → minimal config
+		log "git not available or cache not mounted; using minimal init.lua"
 		write_minimal_init
 	fi
 
-	# Add Unraid-specific overrides if available.
 	install_unraid_plugin_config
 }
 
