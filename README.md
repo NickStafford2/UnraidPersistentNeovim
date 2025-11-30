@@ -172,3 +172,15 @@ Updates:
 bash uninstall.sh
 
 ```
+
+### Terminal Color Note (Optional)
+
+If vi does not look/work properly, or if Neovim looks monochrome or your SSH session shows limited colors, your terminal may not advertise 256-color support.
+You can fix this by adding the following line to your shell profile:
+
+```bash
+echo 'export TERM=xterm-256color' >> ~/.bash_profile
+```
+
+Modern terminals like WezTerm support full 256-color and truecolor, but when connecting over SSH they do not always forward their capabilities. Setting TERM=xterm-256color ensures Neovim receives the correct color information.
+This setting is **not part of the installer** and is only needed on some SSH clients (e.g., PuTTY, old macOS Terminal).
