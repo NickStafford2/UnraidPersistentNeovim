@@ -189,7 +189,7 @@ ensure_nvim_appimage() {
 # Wrapper script in /usr/local/bin
 ###############################################################
 install_nvim_wrapper() {
-	local src="$USB_ROOT/nvim-wrapper.sh"
+	local src="$USB_ROOT/wrapper.sh"
 
 	if [ ! -f "$src" ]; then
 		log "ERROR: Wrapper script missing at $src"

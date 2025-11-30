@@ -16,7 +16,7 @@ TARGET_DIR="$BOOTCFG/nvim"
 INSTALL_SCRIPT_SRC="$REPO_DIR/custom_nvim_install.sh"
 INSTALL_SCRIPT_DEST="$BOOTCFG/custom_nvim_install.sh"
 
-WRAPPER_SRC="$REPO_DIR/nvim-wrapper.sh"
+WRAPPER_SRC="$REPO_DIR/wrapper.sh"
 MINIMAL_INIT_SRC="$REPO_DIR/minimal_init.lua"
 UNRAID_CONFIG_SRC="$REPO_DIR/unraid_config.lua"
 
@@ -75,8 +75,13 @@ copy_file() {
 log "Copying core files..."
 
 copy_file "$INSTALL_SCRIPT_SRC" "$INSTALL_SCRIPT_DEST"
-copy_file "$WRAPPER_SRC" "$TARGET_DIR/nvim-wrapper.sh"
+copy_file "$WRAPPER_SRC" "$TARGET_DIR/wrapper.sh"
 copy_file "$MINIMAL_INIT_SRC" "$TARGET_DIR/minimal_init.lua"
+
+# Install wrapper into system path
+cp "$TARGET_DIR/wrapper.sh" /usr/local/bin/nvim
+chmod 755 /usr/local/bin/nvim
+log "Installed runtime wrapper to /usr/local/bin/nvim"
 
 # Install paths.env
 echo 'USB_ROOT="/boot/config/nvim"' >"$TARGET_DIR/paths.env"
