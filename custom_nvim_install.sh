@@ -52,7 +52,6 @@ NVIM_LOG_DIR="$NVIM_ROOT/logs"
 
 NVIM_APPIMAGE="$NVIM_BIN_DIR/nvim.appimage"
 NVIM_OLD_APPIMAGE="$NVIM_BIN_DIR/nvim.appimage.old"
-NVIM_WRAPPER="/usr/local/bin/nvim"
 
 # Optional offline fallback AppImage path
 FALLBACK_APPIMAGE="/boot/config/extra/nvim-linux-x86_64.appimage"
