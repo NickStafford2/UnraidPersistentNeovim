@@ -174,23 +174,7 @@ Updates:
 
 # Uninstallation
 
-To remove automatic persistence:
-
-1. Edit `/boot/config/go` and delete:
-
 ```
-
-bash /boot/config/custom_nvim_install.sh
-
-```
-
-2. Remove:
-
-```
-
-/boot/config/custom_nvim_install.sh
-/boot/config/nvim/
-/mnt/cache/nvim/
-/usr/local/bin/nvim
+bash uninstall.sh
 
 ```
