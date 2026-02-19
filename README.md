@@ -21,7 +21,7 @@ This system installs Neovim as an AppImage, maintains persistent configuration, 
 
 ---
 
-# Installation (One Command)
+# Installation
 
 ## Clone
 
